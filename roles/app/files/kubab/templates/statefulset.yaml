@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "kubab.fullname" . }}
+spec:
+  serviceName: {{ include "kubab.fullname" . }}-headless
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "kubab.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "kubab.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: busybox
+          image: busybox
+          volumeMounts:
+          - name: data
+            mountPath: /data
+          command: ["/bin/sh"]
+          args: ["-c", "echo `hostname` | sed -e 's/kubab-//' | xargs echo 1+ | bc> /data/kubia.txt"]
+      containers:
+      - name: {{ .Chart.Name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+        ports:
+        - name: http
+          containerPort: 8080
+        volumeMounts:
+        - name: data
+          mountPath: /var/data
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      storageClassName: nfs-storageclass
+      resources:
+        requests:
+          storage: 1Mi
+      accessModes:
+      - ReadWriteOnce

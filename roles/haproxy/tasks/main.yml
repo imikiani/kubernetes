@@ -1,0 +1,22 @@
+---
+- name: Include variables.
+  include_vars: "vars.yml"
+
+- name: Install Haproxy
+  apt:
+    name:
+      - haproxy
+    state: present
+  when: inventory_hostname == 'loadbalancer'
+
+- name : Configure haproxy
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg 
+  when: inventory_hostname == 'loadbalancer'  
+
+- name: Reload haproxy service
+  service:
+    name: haproxy
+    state: restarted
+  when: inventory_hostname == 'loadbalancer'   

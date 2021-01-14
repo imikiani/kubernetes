@@ -1,0 +1,10 @@
+---
+- hosts: all
+  become: true
+  roles:
+    - haproxy
+    - cluster
+    - storage
+    - app
+
+

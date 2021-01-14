@@ -1,0 +1,56 @@
+---
+# - name: Ensure NFS utilities are installed.
+#   apt:
+#     name:
+#       - nfs-common
+#       - nfs-kernel-server
+#     state: present  
+- name: Copy exports file to config nfsserver
+  copy:
+    src: exports
+    dest: /tmp
+  become: true
+  when: inventory_hostname == 'storage'
+  
+  
+- name: Config nfsserver
+  shell: >
+    cat /tmp/exports > /etc/exports
+  become: true  
+  when: inventory_hostname == 'storage'
+  
+- name: "Creates nfsshare directory : /srv/nfs/kubedata"
+  file:
+    path: /srv/nfs/kubedata
+    state: directory
+  become: true
+  when: inventory_hostname == 'storage'
+
+- name: Reload nfs-server
+  systemd:
+    name: nfs-server
+    state: reloaded
+  become: true
+  when: inventory_hostname == 'storage'
+
+
+- name: Ensure k8s module dependencies are installed.
+  pip:
+    name: openshift
+    state: present
+  become: true  
+  when: inventory_hostname == 'kmaster1'
+
+- name: Create resources to implement dynamic volume provisioning.
+  k8s:
+    namespace: default
+    state: present
+    definition: "{{ lookup('file', 'yaml/' + item) }}"
+    wait: true
+  with_items:
+    - rbac.yaml
+    - storageclass.yaml
+    - dynamic-storage-provisioner.yaml
+    - pvc.yaml
+  become: true  
+  when: inventory_hostname == 'kmaster1'

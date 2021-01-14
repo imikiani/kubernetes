@@ -1,0 +1,99 @@
+---
+- name: Add Kubernetes GPG key.
+  environment:
+    http_proxy: fodev.org:8118
+    https_proxy: fodev.org:8118
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present  
+  ignore_errors: false
+
+- name: Add Kubernetes repository
+  apt_repository:
+    repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+    state: present
+    update_cache: true
+
+- name: Install Kubernetes components
+  apt:
+    name:
+      - kubeadm=1.19.2-00
+      - kubelet=1.19.2-00
+      - kubectl=1.19.2-00
+    state: present
+  # notify: restart kubelet  
+
+- name: Ensure kubelet is started and enabled at boot.
+  service:
+    name: kubelet
+    state: started
+    enabled: true
+
+
+- name: Check whether Kubernetes master has been initialized.
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubernetes_master1_init_stat
+  when: inventory_hostname == 'kmaster1'  
+
+
+- name: Set node master1 as a kubernetes master
+  command: >
+    kubeadm init 
+    --control-plane-endpoint="172.16.16.100:6443" 
+    --upload-certs 
+    --apiserver-advertise-address=172.16.16.101 
+    --pod-network-cidr=192.168.0.0/16
+    --ignore-preflight-errors=all
+  register: kubadm_join_command
+  # when: (inventory_hostname == 'kmaster1') and (not kubernetes_master1_init_stat.stat.exists)
+  when: inventory_hostname == 'kmaster1'
+
+
+- name: Store generated token.
+  local_action: copy content={{ kubadm_join_command.stdout }} dest="./token"  
+  become: false
+  when: inventory_hostname == 'kmaster1'
+
+
+  
+- name: Check whether Kubernetes master2 has been initialized.
+  stat:
+    path: /etc/kubernetes/admin.conf
+  register: kubernetes_master2_init_stat
+  when: inventory_hostname == 'kmaster2'
+    
+- name: Create join command for joining the other master
+  local_action: shell ./join_master_member.sh ./token
+  register: join_other_master
+  become: false 
+
+- name: Create join command for joining workes
+  local_action: shell ./join_worker_member.sh ./token
+  register: join_worker
+  become: false 
+
+  
+- name: Join other master
+  shell: >
+    {{ join_other_master.stdout }}
+  # when: (inventory_hostname == 'kmaster2') and (not kubernetes_master2_init_stat.stat.exists)
+  when: (inventory_hostname == 'kmaster2')
+ 
+
+- name: Copy kube config
+  shell: |
+    mkdir -p $HOME/.kube
+    cp -f /etc/kubernetes/admin.conf $HOME/.kube/config
+    chown $(id -u):$(id -g) $HOME/.kube/config
+  when: (inventory_hostname == 'kmaster1') or  (inventory_hostname == 'kmaster2')
+
+
+- name: Join workers
+  shell: >
+    {{ join_worker.stdout }}
+  when: inventory_hostname == 'kworker1'
+
+
+
+

@@ -1,0 +1,46 @@
+---
+- include_tasks: setup-docker.yml
+  when: inventory_hostname=="kmaster1" or inventory_hostname=="kmaster2" or inventory_hostname=="kworker1"
+
+
+- include_tasks: setup-kubernetes.yml
+  when: inventory_hostname=="kmaster1" or inventory_hostname=="kmaster2" or inventory_hostname=="kworker1"   
+
+- include_tasks: setup-calico.yml
+  when: inventory_hostname=="kmaster1" 
+
+
+- name: Wait for system pods to come up
+  shell: kubectl get pods -n kube-system -o json
+  register: kubectl_get_pods
+  # until: kubectl_get_pods.stdout|from_json|json_query('items[*].status.phase')|unique == ["Running"] 
+  until: kubectl_get_pods.stdout|from_json|json_query('items[*].status.phase')|unique == ["Running"] 
+  when: inventory_hostname=="kmaster1" 
+
+
+- name: Wait for all control-plane pods become created
+  shell: "kubectl get po --namespace=kube-system --output=jsonpath='{.items[*].metadata.name}'"
+  register: control_plane_pods_created
+  until: item in control_plane_pods_created.stdout
+  retries: 10
+  delay: 30
+  with_items:
+    - calico-kube-controllers
+    - calico-node
+    - coredns
+    - etcd
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-proxy
+    - kube-scheduler
+  when: inventory_hostname=="kmaster1"
+
+- name: Wait for control-plane pods become ready
+  shell: "kubectl wait pods --all --namespace=kube-system --for=condition=Ready --timeout=600s"
+  register: control_plane_pods_ready
+  when: inventory_hostname=="kmaster1"
+  
+- debug: var=control_plane_pods_ready.stdout_lines
+  when: inventory_hostname=="kmaster1"
+
+

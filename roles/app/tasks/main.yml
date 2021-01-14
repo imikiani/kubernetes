@@ -1,0 +1,60 @@
+---
+- name: Retrieve helm binary archive.
+  unarchive:
+    src: https://get.helm.sh/helm-v3.4.2-linux-amd64.tar.gz
+    dest: /tmp
+    creates: /usr/local/bin/helm
+    remote_src: yes
+  when: inventory_hostname == 'kmaster1'  
+
+- name: Move helm binary into /usr/local/bin/helm.
+  command: cp /tmp/linux-amd64/helm /usr/local/bin/helm
+  args:
+    creates: /usr/local/bin/helm    
+  when: inventory_hostname == 'kmaster1'
+
+- name : Copy kubab helm package
+  copy:
+    src: kubab
+    dest: /tmp
+  when: inventory_hostname == 'kmaster1'
+
+- name: Install kubab with Helm.
+  community.kubernetes.helm:
+    name: kubab
+    chart_ref: /tmp/kubab
+    release_namespace: default
+    values:
+      service:
+        type: NodePort
+  when: inventory_hostname == 'kmaster1'
+
+- name: Ensure K8s module dependencies are installed.
+  pip:
+    name: openshift
+    state: present
+
+  when: inventory_hostname == 'kmaster1'   
+
+- name: Get the details of the kubab Service.
+  community.kubernetes.k8s:
+    api_version: v1
+    kind: Service
+    name: kubab
+    namespace: default
+  register: svc
+  when: inventory_hostname == 'kmaster1'
+
+
+- name: Set the service NodePort as a variable.
+  set_fact:
+    port: "{{ svc['result']['spec']['ports'][0]['nodePort'] }}"
+  when: inventory_hostname == 'kmaster1'
+# - name: Test a request to the service.
+#   uri:
+#     url: http://{{ ansible_host }}:{{ port }}/
+
+- name: Print the URL for kubab.
+  debug:
+    msg: http://{{ ansible_host }}:{{ port }}/
+  when: inventory_hostname == 'kmaster1'          
