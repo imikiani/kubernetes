@@ -46,14 +46,13 @@
     --pod-network-cidr=192.168.0.0/16
     --ignore-preflight-errors=all
   register: kubadm_join_command
-  # when: (inventory_hostname == 'kmaster1') and (not kubernetes_master1_init_stat.stat.exists)
-  when: inventory_hostname == 'kmaster1'
+  when: (inventory_hostname == 'kmaster1') and (not kubernetes_master1_init_stat.stat.exists)
 
 
 - name: Store generated token.
   local_action: copy content={{ kubadm_join_command.stdout }} dest="./token"  
   become: false
-  when: inventory_hostname == 'kmaster1'
+  when: (inventory_hostname == 'kmaster1') and (not kubernetes_master1_init_stat.stat.exists)
 
 
   
@@ -67,6 +66,7 @@
   local_action: shell ./join_master_member.sh ./token
   register: join_other_master
   become: false 
+  when: (inventory_hostname == 'kmaster2') and (not kubernetes_master2_init_stat.stat.exists)
 
 - name: Create join command for joining workes
   local_action: shell ./join_worker_member.sh ./token
@@ -77,8 +77,7 @@
 - name: Join other master
   shell: >
     {{ join_other_master.stdout }}
-  # when: (inventory_hostname == 'kmaster2') and (not kubernetes_master2_init_stat.stat.exists)
-  when: (inventory_hostname == 'kmaster2')
+  when: (inventory_hostname == 'kmaster2') and (not kubernetes_master2_init_stat.stat.exists)
  
 
 - name: Copy kube config
