@@ -63,13 +63,13 @@
   when: inventory_hostname == 'kmaster2'
     
 - name: Create join command for joining the other master
-  local_action: shell ./join_master_member.sh ./token
+  local_action: shell ./join_master_member.sh {{ ansible_host }}
   register: join_other_master
   become: false 
   when: (inventory_hostname == 'kmaster2') and (not kubernetes_master2_init_stat.stat.exists)
 
 - name: Create join command for joining workes
-  local_action: shell ./join_worker_member.sh ./token
+  local_action: shell ./join_worker_member.sh {{ ansible_host }}
   register: join_worker
   become: false 
   when: role == "worker"
