@@ -1,7 +1,5 @@
 #/bin/bash
-# Get the line number of the sentence syas: 'You can now join any number of the control-plane'
-#LINE_NUMBER=$(echo $JOIN_COMMAND_OUTPUT | grep -n "You can now join any number of the control-plane" | cut -d: -f1)
-#NEXT_LINE_NUMBER=$[ $LINE_NUMBER + 1 ]
+# Get the line number of the sentence syas: 'Then you can join any number of worker nodes'
 
 # The first argument is ansible_host which passed to the script
 APISERVER_ADVERTISE_ADDRESS=$1
