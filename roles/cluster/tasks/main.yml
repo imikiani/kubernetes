@@ -1,10 +1,10 @@
 ---
 - include_tasks: setup-docker.yml
-  when: inventory_hostname=="kmaster1" or inventory_hostname=="kmaster2" or inventory_hostname=="kworker1"
+  when: role=="master" or role=="worker"
 
 
 - include_tasks: setup-kubernetes.yml
-  when: inventory_hostname=="kmaster1" or inventory_hostname=="kmaster2" or inventory_hostname=="kworker1"   
+  when: role=="master" or role=="worker"
 
 - include_tasks: setup-calico.yml
   when: inventory_hostname=="kmaster1" 

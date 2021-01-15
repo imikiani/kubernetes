@@ -4,6 +4,8 @@ loadbalancer ansible_host=172.16.16.100 role=loadbalancer
 kmaster1 ansible_host=172.16.16.101 role=master
 kmaster2 ansible_host=172.16.16.102 role=master
 kworker1 ansible_host=172.16.16.201 role=worker
+kworker2 ansible_host=172.16.16.202 role=worker
+kworker3 ansible_host=172.16.16.203 role=worker
 
 [cluster:vars]
 ansible_ssh_user=vagrant

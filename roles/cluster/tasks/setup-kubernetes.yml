@@ -72,7 +72,7 @@
   local_action: shell ./join_worker_member.sh ./token
   register: join_worker
   become: false 
-
+  when: role == "worker"
   
 - name: Join other master
   shell: >
@@ -91,7 +91,7 @@
 - name: Join workers
   shell: >
     {{ join_worker.stdout }}
-  when: inventory_hostname == 'kworker1'
+  when: role == "worker"
 
 
 

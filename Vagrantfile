@@ -15,7 +15,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     { :name => "loadbalancer",  :ip => "172.16.16.100", :cpu => 1,   :memory => 1024},
     { :name => "kmaster1",      :ip => "172.16.16.101", :cpu => 2,   :memory => 2048},
     { :name => "kmaster2",      :ip => "172.16.16.102", :cpu => 2,   :memory => 2048},
-    { :name => "kworker1",      :ip => "172.16.16.201", :cpu => 1,   :memory => 2048}
+    { :name => "kworker1",      :ip => "172.16.16.201", :cpu => 1,   :memory => 1024},
+    { :name => "kworker2",      :ip => "172.16.16.202", :cpu => 1,   :memory => 1024},
+    { :name => "kworker3",      :ip => "172.16.16.203", :cpu => 1,   :memory => 1024}
   ]
 
   # Configure each of the VMs.
