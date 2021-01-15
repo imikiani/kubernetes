@@ -23,6 +23,23 @@
     state: present
   # notify: restart kubelet  
 
+ # https://github.com/kubernetes/kubernetes/issues/60835
+- name: Configure KUBELET_EXTRA_ARGS
+  lineinfile:
+    path: '/etc/systemd/system/kubelet.service.d/10-kubeadm.conf'
+    line: "{{ 'Environment=\"KUBELET_EXTRA_ARGS=--node-ip=' + ansible_host + '\"' }}"
+    regexp: '^Environment="KUBELET_EXTRA_ARGS='
+    state: present
+    mode: 0644
+  register: kubelet_systemd_file
+
+- name: Reload systemd unit if kublet systemd file changed
+  systemd:
+    state: restarted
+    daemon_reload: true
+    name: kubelet
+  when: kubelet_systemd_file is changed
+
 - name: Ensure kubelet is started and enabled at boot.
   service:
     name: kubelet
