@@ -1,0 +1,12 @@
+diff --git a/componentsoriginal.yaml b/components.yaml
+index 2259e45..cc42b87 100644
+--- a/componentsoriginal.yaml
++++ b/components.yaml
+@@ -133,6 +133,7 @@ spec:
+         - --secure-port=4443
+         - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+         - --kubelet-use-node-status-port
++        - --kubelet-insecure-tls
+         image: k8s.gcr.io/metrics-server/metrics-server:v0.4.1
+         imagePullPolicy: IfNotPresent
+         livenessProbe:

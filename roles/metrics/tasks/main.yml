@@ -1,0 +1,28 @@
+---
+# https://github.com/kubernetes-sigs/metrics-server
+- name: Get metrics server manifests
+  get_url:
+    url: https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+    dest: /tmp/components.yaml
+  when: inventory_hostname == 'kmaster1'
+
+# https://github.com/kubernetes-sigs/metrics-server#configuration
+- name: Patch metrics severver to skip tls certificates (For testing purposes only)
+  patch:
+    src: files/components-patch.txt
+    dest: /tmp/components.yaml
+  when: inventory_hostname == 'kmaster1'
+ 
+- name: Setup metrics server
+  command: "{{ item }}"
+  with_items:
+    - kubectl apply -f /tmp/components.yaml
+  register: metrics_result
+  changed_when: "'created' in metrics_result.stdout"
+  when: inventory_hostname == 'kmaster1'
+
+- name: Install Siege for HPA & load testing
+  package:
+    name: siege
+    state: present
+  when: inventory_hostname == 'kmaster1'
