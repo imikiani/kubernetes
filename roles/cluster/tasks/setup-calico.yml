@@ -1,9 +1,9 @@
 ---
-- name: Ensure K8s module dependencies are installed.
-  pip:
-    name: openshift
-    state: present
-  when: inventory_hostname == 'kmaster1' or inventory_hostname == 'kmaster2'
+# - name: Ensure K8s module dependencies are installed.
+#   pip:
+#     name: openshift
+#     state: present
+#   when: inventory_hostname == 'kmaster1' or inventory_hostname == 'kmaster2'
 
 # - name: Retrieve calico.yml
 #   get_url:
@@ -23,10 +23,19 @@
 #   changed_when: "'created' in calico_result.stdout"
 #   when: inventory_hostname == 'kmaster1' 
 
-- name: Ensure Calico network is deployed  
-  k8s:                                                                                                                                                                                                             
-    definition: '{{ item }}'
-    state: present                                                                                                                                                                                       
-    wait: true                                                                                                                                                                                     
-  with_items: '{{ lookup("url", "https://docs.projectcalico.org/v3.5/manifests/calico.yaml", split_lines=False) | from_yaml_all | list }}'  
-  when: inventory_hostname == 'kmaster1'   
+# - name: Ensure Calico network is deployed  
+#   k8s:                                                                                                                                                                                                             
+#     definition: '{{ item }}'
+#     state: present                                                                                                                                                                                       
+#     wait: true                                                                                                                                                                                     
+#   with_items: '{{ lookup("url", "https://docs.projectcalico.org/v3.5/manifests/calico.yaml", split_lines=False) | from_yaml_all | list }}'  
+#   when: inventory_hostname == 'kmaster1'   
+
+
+- name: Setup Calico networking
+  command: "{{ item }}"
+  with_items:
+    - kubectl apply -f https://docs.projectcalico.org/v3.5/manifests/calico.yaml
+  register: calico_result
+  changed_when: "'created' in calico_result.stdout"
+  when: inventory_hostname == 'kmaster1'
