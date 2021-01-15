@@ -91,6 +91,7 @@
 - name: Join workers
   shell: >
     {{ join_worker.stdout }}
+    creates=/etc/kubernetes/kubelet.conf
   when: role == "worker"
 
 
