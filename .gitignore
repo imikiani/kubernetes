@@ -1,0 +1,5 @@
+# vagrant config folder
+.vagrant/
+
+# The token generated for joining the nodes
+token
