@@ -22,7 +22,7 @@ spec:
           - name: data
             mountPath: /data
           command: ["/bin/sh"]
-          args: ["-c", "echo `hostname` | sed -e 's/kubab-//' | xargs echo 1+ | bc> /data/kubia.txt"]
+          args: ["-c", "echo `hostname` | sed -e 's/kubab-//' | xargs echo 1+ | bc> /data/id.txt"]
       containers:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
