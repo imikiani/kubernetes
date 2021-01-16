@@ -8,7 +8,7 @@ This cluster contains two main nodes and three worker nodes. Also a nfs server a
 All things we need to run this cluster are [vagrant](https://www.vagrantup.com/) and [ansible](https://www.ansible.com/). Although we did not follow the quorum principle for number of main nodes, it could be an experimental project.
 
 
-We use ansible to provision our clusters running of to op vagrant. Ansible tasks we've written to provision our cluster are packaged as [roles](https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse_roles.html). If we want to describe what ever role do, a summary is bellow. We will explain more iin the following.
+We use ansible to provision our clusters running on top of vagrant. Ansible tasks we've written to provision our cluster are packaged as [roles](https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse_roles.html). If we want to describe what ever role do, a summary is bellow. We will explain more iin the following.
 
 
 ### About roles
@@ -38,6 +38,22 @@ The cluster components are installed just on main and node and worker node. hapr
 After configuring those components and joining worker and main nodes, we must use a [CNI](https://kubernetes.io/docs/concepts/cluster-administration/networking/) provider to handle networking in our cluster. We used [Calico](https://www.projectcalico.org/) for that.
 
 By deploying Calico in our cluster, some pods are created, and some pods previously created, may be reconfigured. By the way there is need to wait for those control plane pods and services to be stabilized. We have a task which monitors those services and when ever they are up ad running, We continue to deploy our helm charts on the cluster. 
-Therefore we have a task in which we monitor the heart of control plane (pods in `kube-system` namespace)
+Therefore, We have a task in which we monitor the heart of control plane (pods in `kube-system` namespace)
+
+**storage role**
+
+As mentioned We have a nfs server to store our cluster wide data. You can see the directory shared on this server.
+Run `vagrant ssh storage`, and go to the shared directory: `cd /srv/nfs/kubedata` to see the data mounted to the pods which scheduled on every node in our cluster. This role setup nfs server and share the directory, (configure `/etc/exports`)
+
+Also in this role, We have some kubernetes resources which help us to claim persistent volumes dynamically. After setting up the nfs server, We deploy all the resources to Kubernetes to let our pods claim persistent volumes when they need.
+
+
+**app role**
+
+This role consists a [helm chart](https://helm.sh/docs/topics/charts/) named `Kubab`. Kubab is a simple nodejs application and also a [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) of one  which prints an id consists on it. An [init container](https://kubernetes.io/docs/concepts/workloads/pods/init-containers/) creates that id and writes it to the persistent volume bound to it. As the persistent volume has been bound to the main pod too, It can read and show the id.
+Also `Kubab` has a Service and HPA resource. The Service resource provides a route to the web application from the cluster outside. HPA resource is configured to scale the Statefulset application when its cpu load is over the threshold. The threshold is configured in `values.yaml` of the chart.    
+
+The tasks in this role is responsible for installing [helm](https://helm.sh/) and deploying the chart to the cluster. After that, an url is printed out through which we can access the web application.
+
 
 I will update the readme soon.
