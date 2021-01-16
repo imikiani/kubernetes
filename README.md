@@ -8,16 +8,16 @@ This cluster contains two main nodes and three worker nodes. Also a nfs server a
 All things we need to run this cluster are [vagrant](https://www.vagrantup.com/) and [ansible](https://www.ansible.com/). Although we did not follow the quorum principle for number of main nodes, it could be an experimental project.
 
 
-We use ansible to provision our clusters running on top of vagrant. Ansible tasks we've written to provision our cluster are packaged as [roles](https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse_roles.html). If we want to describe what ever role do, a summary is bellow. We will explain more iin the following.
+We use ansible to provision our clusters running on top of vagrant. Ansible tasks we've written to provision our cluster are packaged as [roles](https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse_roles.html). If we want to describe what every role does, a summary is below. We will explain more in the following.
 
 
 ### About roles
 
-- haproxy: provides haproxy server, a loadbalancer for kubernetes api server
-- cluster: Setups Docker, Kubernetes and joins workers and masters to the cluster
+- haproxy: Provides haproxy server, a load balancer for kubernetes api server.
+- cluster: Setups Docker, Kubernetes and joins workers and masters to the cluster.
 - storage: Provides a nfs server and deploys an application in order to we have a dynamic volume provisioning.
-- metrics: Setups a metrics server in order to ve have metrics about nodes, pods and consumed resources such as cpu utilization.
-- app: Contains a helm chart in which there is a stateful application with a hpa resource configured to have horizontal pod autoscaler.
+- metrics: Setups a metrics server in order to have metrics about nodes, pods and consumed resources such as cpu utilization.
+- app: Contains a helm chart in which there is a stateful application with a hpa resource configured to have horizontal pod auto scaler.
 
 
 
@@ -76,3 +76,30 @@ After a few seconds, the Horizontal Pod Autoscaler which We defined in the `kuba
 
 When the application is scaling, You can monitor the volumes created on `storage` machine simultaneously (`cd /srv/nfs/kubedata`)
 Also you can run `watch kubectl get statefulset kubab` in one of main nodes to see what is happening.
+
+
+### List of nodes
+You can see list of nodes in `Vagrantfile` or `inventory` too. For example you can run `vagrant ssh storage` or `vagrant ssh kmaster2` to ssh to nfs server and second main node respectively.
+
+As you can see we use 172.16.16.X ip range because Calico use 192.168.0.0/16 subnet to provide its networking service.
+
+| Node          | Role          |         IP  |
+| ------------- | ------------- |-------------|
+| kmaster1      | main          |172.16.16.101|
+| kmaster2      | main          |172.16.16.102|
+| kworker1      | worker        |172.16.16.201|
+| kworker2      | worker        |172.16.16.202|
+| kworker3      | worker        |172.16.16.203|
+| storage       | nfs server    |172.16.16.50 |
+| loadbalancer  | load balancer |172.16.16.100|
+
+
+### Up and running the cluster
+You can just run `vagrant up` command to run, provision and deploy the application.
+
+
+### kubectl
+You can ssh to one of main nodes and then switch to the `root` user:
+1. `vagrant ssh kmaster1`
+2. `sudo su`
+3. `kubectl get po -n kube-system`
