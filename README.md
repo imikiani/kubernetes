@@ -17,7 +17,15 @@ We use ansible to provision our clusters running of to op vagrant. Ansible tasks
 - cluster: Setups Docker, Kubernetes and joins workers and masters to the cluster
 - storage: Provides a nfs server and deploys an application in order to we have a dynamic volume provisioning.
 - metrics: Setups a metrics server in order to ve have metrics about nodes, pods and consumed resources such as cpu utilization.
-- app: Contains a helm chart in which there is a stateful application with a hpa resource configured to have horizontal pod scaling.
+- app: Contains a helm chart in which there is a stateful application with a hpa resource configured to have horizontal pod autoscaler.
+
+
+
+**haproxy role**
+
+As we have two main nodes, we must provide an endpoint that other nodes send their request to that. If so, worker nodes does not concern about the responsible node. They just send ther request to one endpoint. That endpoint catch the requests and send them to one of our main nodes. In fact we have a proxy server that it's backend is the main nodes.
+
+If we had just onde main node, we did not need a proxy server. We use [HAProxy](http://www.haproxy.org/) for loadbalancing and dispatching requests among main nodes.
 
 
 I will update the readme soon.
