@@ -56,4 +56,22 @@ Also `Kubab` has a Service and HPA resource. The Service resource provides a rou
 The tasks in this role is responsible for installing [helm](https://helm.sh/) and deploying the chart to the cluster. After that, an url is printed out through which we can access the web application.
 
 
+
+
+**metrics role**
+
+This role setups [Kubernetes metrics server](https://github.com/kubernetes-sigs/metrics-server). By the meteics sever we have a lot of metrics about our cluster resources. Thanks to the metrics provided by the server, The HPA manifest in `Kubab` helm chart can scale our application automatically.
+
+Also, this role installs [Siege](https://github.com/JoeDog/siege) load tester. With Siege We can see how our application will be scaled if  utilization of a pod pass over a threshold.
+
+You can enter to `kmaster1` (one of main nodes) and use Siege.
+
+`vagrant ssh kmaster1`
+
+`siege -c 5 -t 3m [application_url]` : (Fires five  concurrent requests that take 3 minutes)
+
+After a few seconds, the Horizontal Pod Autoscaler which We defined in the `kubab` chart, comes and scales our application.
+
+When the application is scaling, You can monitor the volumes created on `storage` machine simultaneously (`cd /srv/nfs/kubedata`)
+Also you can run `watch kubectl get statefulset kubab` in one of main nodes to see what is happening.
 I will update the readme soon.
