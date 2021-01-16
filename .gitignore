@@ -3,3 +3,6 @@
 
 # The token generated for joining the nodes
 token
+
+# Intellij configs
+.idea/
