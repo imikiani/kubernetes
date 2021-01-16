@@ -58,6 +58,7 @@ The tasks in this role is responsible for installing [helm](https://helm.sh/) an
 For example an application url is: `http://172.16.16.101:32119`
 The port in application url may be differ from here, based on the randomly port assigned to the NodePort service.
 
+At last I must to say If you need to a peer to peer connection between the instances of the application, You can deploy a [headless service](https://kubernetes.io/docs/concepts/services-networking/service/#headless-services) with name of `{{ include "kubab.fullname" . }}-headless`
 
 
 **metrics role**
