@@ -29,9 +29,15 @@ If we had just one main node, we did not need a proxy server. We use [HAProxy](h
 
 **cluster role**
 
-We set up basic components in this rule. We install and configure Docker, kubelet, kubeadm and kubectl to build our cluster. Although Docker shim is deprecated some days ago, [don't panic](https://kubernetes.io/blog/2020/12/02/dont-panic-kubernetes-and-docker/) and keep on reading this readme :) 
+We set up basic components in this role. We install and configure Docker, kubelet, kubeadm and kubectl to build our cluster. Although Docker shim is deprecated some days ago, [don't panic](https://kubernetes.io/blog/2020/12/02/dont-panic-kubernetes-and-docker/) and keep on reading this readme :) 
 
 First, a main node initialize the cluster by running `kubadm init` command. in this command, the master node specifies that our control plane requests must be sent to the haproxy we mentioned earlier. Output of this command is an instruction for joining other main and worker nodes. In this instruction, Also there are two commands for joining other nodes as well as other guidance. All things we must do is processing the output and extracting the join commands from it. This will be done by `join_master_member.sh` and `join_worker_member.sh` scripts for joining main and worker nodes respectively.
 These scripts are executed among the configuring the cluster components in some tasks of the `cluster` role.
+
+The cluster components are installed just on main and node and worker node. haproxy and our nfs server are not aware of the cluster and just serve a proxy and nfs service.
+After configuring those components and joining worker and main nodes, we must use a [CNI](https://kubernetes.io/docs/concepts/cluster-administration/networking/) provider to handle networking in our cluster. We used [Calico](https://www.projectcalico.org/) for that.
+
+By deploying Calico in our cluster, some pods are created, and some pods previously created, may be reconfigured. By the way there is need to wait for those control plane pods and services to be stabilized. We have a task which monitors those services and when ever they are up ad running, We continue to deploy our helm charts on the cluster. 
+Therefore we have a task in which we monitor the heart of control plane (pods in `kube-system` namespace)
 
 I will update the readme soon.
