@@ -81,7 +81,7 @@ Also you can run `watch kubectl get statefulset kubab` in one of main nodes to s
 ### List of nodes
 You can see list of nodes in `Vagrantfile` or `inventory` too. For example you can run `vagrant ssh storage` or `vagrant ssh kmaster2` to ssh to nfs server and second main node respectively.
 
-As you can see we use 172.16.16.X ip range because Calico use 192.168.0.0/16 subnet to provide its networking service.
+As you can see we use 172.16.16.X ip range because `Calico` uses 192.168.0.0/16 subnet to provide its networking service.
 
 | Node          | Role          |         IP  |
 | ------------- | ------------- |-------------|
@@ -99,7 +99,16 @@ You can just run `vagrant up` command to run, provision and deploy the applicati
 
 
 ### kubectl
-You can ssh to one of main nodes and then switch to the `root` user:
+You can ssh to one of main nodes and then switch to the `root` user to run `kubectl`:
 1. `vagrant ssh kmaster1`
 2. `sudo su`
 3. `kubectl get po -n kube-system`
+
+### helm
+`helm` is installed on `kmaster1`
+1. `vagrant ssh kmaster1`
+2. `sudo su`
+3. `helm list`
+
+### Docker image
+The image that the `helm` chart deploys is: [imikiani/kubab](https://hub.docker.com/r/imikiani/kubab). It's Dockerfile is under `docker-image` directory.
