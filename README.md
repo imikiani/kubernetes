@@ -25,7 +25,13 @@ We use ansible to provision our clusters running of to op vagrant. Ansible tasks
 
 As we have two main nodes, we must provide an endpoint that other nodes send their request to that. If so, worker nodes does not concern about the responsible node. They just send ther request to one endpoint. That endpoint catch the requests and send them to one of our main nodes. In fact we have a proxy server that their backend are the main nodes.
 
-If we had just onde main node, we did not need a proxy server. We use [HAProxy](http://www.haproxy.org/) for loadbalancing and dispatching requests among main nodes.
+If we had just one main node, we did not need a proxy server. We use [HAProxy](http://www.haproxy.org/) for loadbalancing and dispatching requests among main nodes. Therefore in the tasks defined in the role, we setup and config haproxy server. There is a jinja2 template we build haproxy configs based on it.
 
+**cluster role**
+
+We set up basic components in this rule. We install and configure Docker, kubelet, kubeadm and kubectl to build our cluster. Although Docker shim is deprecated some days ago, [don't panic](https://kubernetes.io/blog/2020/12/02/dont-panic-kubernetes-and-docker/) and keep on reading this readme :) 
+
+First, a main node initialize the cluster by running `kubadm init` command. in this command, the master node specifies that our control plane requests must be sent to the haproxy we mentioned earlier. Output of this command is an instruction for joining other main and worker nodes. In this instruction, Also there are two commands for joining other nodes as well as other guidance. All things we must do is processing the output and extracting the join commands from it. This will be done by `join_master_member.sh` and `join_worker_member.sh` scripts for joining main and worker nodes respectively.
+These scripts are executed among the configuring the cluster components in some tasks of the `cluster` role.
 
 I will update the readme soon.
