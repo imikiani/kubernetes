@@ -1,5 +1,15 @@
-# kubernetes
-A multi master cluster running a stateful application with dynamic volume provisioning
+# Kubernetes
+A HA cluster running a stateful application with dynamic volume provisioning.
+
+
+This cluster contains two main nodes and three worker nodes. Also a nfs server and a proxy server are there. In fact we have 7 nodes.
+
+
+All things we need to run this cluster are [vagrant](https://www.vagrantup.com/) and [ansible](https://www.ansible.com/). Although we did not follow the quorum principle for number of main nodes, it could be an experimental project.
+
+
+We use ansible to provision our clusters running of to op vagrant. Ansible tasks we've written to provision our cluster are packaged as [roles](https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse_roles.html). If we want to describe what ever role do, a summary is bellow. We will explain more iin the following.
+
 
 ### About roles
 
