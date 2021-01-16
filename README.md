@@ -55,6 +55,8 @@ Also `Kubab` has a Service and HPA resource. The Service resource provides a rou
 
 The tasks in this role is responsible for installing [helm](https://helm.sh/) and deploying the chart to the cluster. After that, an url is printed out through which we can access the web application.
 
+For example an application url is: `http://172.16.16.101:32119`
+The port in application url may be differ from here, based on the randomly port assigned to the NodePort service.
 
 
 
@@ -74,4 +76,3 @@ After a few seconds, the Horizontal Pod Autoscaler which We defined in the `kuba
 
 When the application is scaling, You can monitor the volumes created on `storage` machine simultaneously (`cd /srv/nfs/kubedata`)
 Also you can run `watch kubectl get statefulset kubab` in one of main nodes to see what is happening.
-I will update the readme soon.
